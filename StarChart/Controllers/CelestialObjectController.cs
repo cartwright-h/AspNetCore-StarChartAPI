@@ -64,5 +64,66 @@ namespace StarChart.Controllers
             }
             return Ok(objects);
         }
+
+        [HttpPost]
+        public IActionResult Create([FromBody]CelestialObject newObject)
+        {
+            _context.CelestialObjects.Add(newObject);
+            _context.SaveChanges();
+            return CreatedAtRoute("GetById", new { id = newObject.Id }, newObject);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, CelestialObject currentObject)
+        {
+            var dbObject = _context.CelestialObjects.FirstOrDefault(e => e.Id == id);
+            if (dbObject == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                dbObject.Name = currentObject.Name;
+                dbObject.OrbitalPeriod = currentObject.OrbitalPeriod;
+                dbObject.OrbitedObjectId = currentObject.OrbitedObjectId;
+                _context.CelestialObjects.Update(dbObject);
+                _context.SaveChanges();
+                return NoContent();
+            }
+        }
+
+        [HttpPatch("{id}/{name}")]
+        public IActionResult RenameObject(int id, string name)
+        {
+            var currentObject = _context.CelestialObjects.FirstOrDefault(e => e.Id == id);
+            if (currentObject == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                currentObject.Name = name;
+                _context.CelestialObjects.Update(currentObject);
+                _context.SaveChanges();
+                return NoContent();
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var allMatches = _context.CelestialObjects.Where(e => e.Id == id || e.OrbitedObjectId == id);
+            if (allMatches.Count() == 0)
+            {
+                return NotFound();
+            }
+            else
+            {
+                _context.CelestialObjects.RemoveRange(allMatches);
+                _context.SaveChanges();
+                return NoContent();
+            }
+
+        }
     }
 }
